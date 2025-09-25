@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     from starlette.types import ExceptionHandler, Lifespan
 
     from ..ag_ui import AGUIApp
+    from ..responses_api import ResponsesAPIApp
 
 
 T = TypeVar('T')
@@ -864,6 +865,49 @@ class AbstractAgent(Generic[AgentDepsT, OutputDataT], ABC):
             infer_name=infer_name,
             toolsets=toolsets,
             # Starlette
+            debug=debug,
+            routes=routes,
+            middleware=middleware,
+            exception_handlers=exception_handlers,
+            on_startup=on_startup,
+            on_shutdown=on_shutdown,
+            lifespan=lifespan,
+        )
+
+    def to_responses_api(
+        self,
+        *,
+        # Agent.iter parameters
+        output_type: OutputSpec[OutputDataT] | None = None,
+        model: models.Model | models.KnownModelName | str | None = None,
+        deps: AgentDepsT = None,
+        model_settings: ModelSettings | None = None,
+        usage_limits: UsageLimits | None = None,
+        usage: RunUsage | None = None,
+        infer_name: bool = True,
+        toolsets: Sequence[AbstractToolset[AgentDepsT]] | None = None,
+        # Starlette application settings
+        debug: bool = False,
+        routes: Sequence[BaseRoute] | None = None,
+        middleware: Sequence[Middleware] | None = None,
+        exception_handlers: Mapping[Any, ExceptionHandler] | None = None,
+        on_startup: Sequence[Callable[[], Any]] | None = None,
+        on_shutdown: Sequence[Callable[[], Any]] | None = None,
+        lifespan: Lifespan[ResponsesAPIApp[AgentDepsT, OutputDataT]] | None = None,
+    ) -> ResponsesAPIApp[AgentDepsT, OutputDataT]:
+        """Create a Starlette application that exposes the agent via the OpenAI Responses API."""
+        from ..responses_api import ResponsesAPIApp
+
+        return ResponsesAPIApp(
+            agent=self,
+            output_type=output_type,
+            model=model,
+            deps=deps,
+            model_settings=model_settings,
+            usage_limits=usage_limits,
+            usage=usage,
+            infer_name=infer_name,
+            toolsets=toolsets,
             debug=debug,
             routes=routes,
             middleware=middleware,
